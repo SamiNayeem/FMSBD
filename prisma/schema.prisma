@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  Id           Int       @id @default(autoincrement())
+  FirstName    String
+  LastName     String
+  Email        String    @unique
+  Password     String
+  PhoneNumber  String
+  Role         String
+  Image        Bytes?
+  CreatedAt    DateTime  @default(now())
+  LastLoginAt  DateTime?
+  SessionToken String?
+  IsActive     Boolean   @default(true)
+
+  accounts     Account[] // Relation with NextAuth accounts
+  sessions     Session[] // Relation with NextAuth sessions
+  posts        Post[]    // Relation to Post as author
+  responses    Response[] // Relation to Response as responder
+  chats        Chat[]    @relation("ChatParticipants") // Relation to Chat as a participant
+  messages     Message[] // Relation to Message as a sender
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user users @relation(fields: [userId], references: [Id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+
+  user users @relation(fields: [userId], references: [Id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  authorId    Int
+  content     String      @db.VarChar(500)
+  image       Bytes?     
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  responses   Response[] 
+
+  author      users      @relation(fields: [authorId], references: [Id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+model Response {
+  id          Int        @id @default(autoincrement())
+  postId      Int
+  userId      Int
+  message     String      @db.VarChar(300)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  post        Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user        users      @relation(fields: [userId], references: [Id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+model Chat {
+  id             Int       @id @default(autoincrement())
+  participants   users[]   @relation("ChatParticipants")
+  messages       Message[] 
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Message {
+  id          Int       @id @default(autoincrement())
+  chatId      Int
+  senderId    Int
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender      users     @relation(fields: [senderId], references: [Id], onDelete: Cascade)
+}
