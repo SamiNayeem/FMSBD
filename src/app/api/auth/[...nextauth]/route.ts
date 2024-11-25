@@ -38,6 +38,7 @@ export const authOptions = {
           email: user.Email,
           role: user.Role,
         };
+        
       },
     }),
   ],

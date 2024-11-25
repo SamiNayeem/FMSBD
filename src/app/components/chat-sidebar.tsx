@@ -1,47 +1,106 @@
-const users = [
-    { id: 1, name: "Henry Boyd", role: "Admin", avatar: "H" },
-    { id: 2, name: "Marta Curtis", role: "Volunteer", avatar: "M" },
-    { id: 3, name: "Philip Tucker", role: "Admin", avatar: "P" },
-    { id: 4, name: "Christine Reid", role: "Volunteer", avatar: "C" },
-    { id: 5, name: "Jerry Guzman", role: "Volunteer", avatar: "J" },
-  ];
-  
-  interface SidebarProps {
-    onUserSelect: (user: { id: number; name: string; role: string; avatar: string }) => void;
-  }
+'use client';
 
-  const Sidebar = ({ onUserSelect }: SidebarProps) => {
+import React, { useEffect, useState } from "react";
+
+type SidebarProps = {
+  onUserSelect: (user: User) => void;
+};
+
+type User = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  role: string;
+  avatar?: string;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch("/api/get-users");
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setError("Failed to fetch users. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  if (loading) {
     return (
-      <div className="flex flex-col py-8 pl-6 pr-2 w-64 bg-white flex-shrink-0">
-        <div className="flex flex-row items-center justify-center h-12 w-full">
-          <div className="flex items-center justify-center rounded-2xl text-indigo-700 bg-indigo-100 h-10 w-10">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-          </div>
-          <div className="ml-2 font-bold text-2xl">QuickChat</div>
-        </div>
-  
-        <div className="flex flex-col mt-8">
-          <div className="text-xs font-bold">Active Conversations</div>
-          <div className="flex flex-col space-y-2 mt-4">
-            {users.map((user) => (
-              <button
-                key={user.id}
-                className="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2"
-                onClick={() => onUserSelect(user)}
-              >
-                <div className="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
-                  {user.avatar}
-                </div>
-                <div className="ml-2 text-sm font-semibold">{user.name}</div>
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="flex items-center justify-center p-4">
+        <p className="text-gray-500">Loading users...</p>
       </div>
     );
-  };
-  
-  export default Sidebar;
-  
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 text-red-500 text-center">
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-1/4 bg-white border-r border-gray-200 flex flex-col py-4">
+      <h2 className="text-xl font-semibold mb-4 text-gray-700 px-4">Chat Users</h2>
+      <div
+        className="flex-grow overflow-y-auto px-4 space-y-2
+          [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar-track]:rounded-full
+          [&::-webkit-scrollbar-track]:bg-gray-100
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          [&::-webkit-scrollbar-thumb]:bg-gray-300
+          dark:[&::-webkit-scrollbar-track]:bg-neutral-600
+          dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
+      >
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition duration-150"
+            onClick={() => onUserSelect(user)}
+          >
+            {/* Avatar */}
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={`${user.firstName} ${user.lastName}`}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-semibold">
+                {user.firstName[0]}
+              </div>
+            )}
+
+            {/* User Info */}
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-800">
+                {user.firstName} {user.lastName}
+              </p>
+              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

@@ -77,7 +77,7 @@ const NavBar: React.FC = () => {
             <>
               <a href="/feed" className="text-gray-600 hover:text-blue-600">Feed</a>
               <a href="/map" className="text-gray-600 hover:text-blue-600">Maps</a>
-              <a href="/messages" className="text-gray-600 hover:text-blue-600">Messages</a>
+              <a href="/chat" className="text-gray-600 hover:text-blue-600">Messages</a>
               <a href="/messages" className="text-gray-600 hover:text-blue-600">Profile</a>
             </>
           ) : (
