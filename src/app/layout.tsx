@@ -4,7 +4,7 @@ import "./globals.css";
 
 
 import NavBar from "./components/navbar";
-import Footer from "./components/footer";
+
 import { SessionProviderWrapper } from "./components/session-provider-wrapper";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,7 +36,6 @@ export default function RootLayout({
         <NavBar />
         {children}
         </SessionProviderWrapper>
-        <Footer />
       </body>
     </html>
   );

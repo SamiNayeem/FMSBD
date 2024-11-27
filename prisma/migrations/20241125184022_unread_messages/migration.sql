@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `chat` ADD COLUMN `isActive` BOOLEAN NOT NULL DEFAULT true;
+
+-- AlterTable
+ALTER TABLE `message` ADD COLUMN `isActive` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `isRead` BOOLEAN NOT NULL DEFAULT false;
