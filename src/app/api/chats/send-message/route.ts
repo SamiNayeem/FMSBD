@@ -1,5 +1,3 @@
-// File: app/api/chats/send-message/route.ts
-
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -13,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { recipientId, content } = await req.json();
+    const { chatId, recipientId, content } = await req.json();
 
     if (!recipientId || !content) {
       return NextResponse.json(
@@ -22,40 +20,49 @@ export async function POST(req: Request) {
       );
     }
 
-    // Find or create the chat between the sender and recipient
+    // Find or create the chat
     let chat = await prisma.chat.findFirst({
       where: {
-        AND: [
-          { participants: { some: { Id: session.user.id } } },
-          { participants: { some: { Id: recipientId } } },
-        ],
-      },
-      include: {
-        participants: true, // Include participants in the chat object
+        participants: {
+          every: {
+            Id: { in: [session.user.id, recipientId] },
+          },
+        },
       },
     });
 
     if (!chat) {
-      // Create the chat if it doesn't exist
       chat = await prisma.chat.create({
         data: {
           participants: {
             connect: [{ Id: session.user.id }, { Id: recipientId }],
           },
         },
-        include: {
-          participants: true, // Include participants when creating the chat
-        },
       });
     }
 
-    // Create a new message in the chat
+    // Create the message
     const message = await prisma.message.create({
       data: {
         chatId: chat.id,
         senderId: session.user.id,
         content,
       },
+    });
+
+    // Update the chat with the last message
+    await prisma.chat.update({
+      where: { id: chat.id },
+      data: {
+        lastMessage: content,
+        lastMessageAt: new Date(),
+      },
+    });
+
+    // Increment the recipient's unread message count
+    await prisma.users.update({
+      where: { Id: recipientId },
+      data: { UnreadMessages: { increment: 1 } },
     });
 
     return NextResponse.json(message, { status: 201 });

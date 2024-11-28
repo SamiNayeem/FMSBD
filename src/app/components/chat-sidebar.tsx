@@ -13,7 +13,7 @@ type User = {
   lastName: string;
   role: string;
   avatar?: string;
-  unreadCount?: number;
+  unreadCount?: number; // Unread message count
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
@@ -21,31 +21,40 @@ const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await axios.get('/api/chats/get-users-with-unread-messages');
+      setUsers(data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError('Failed to fetch users. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const { data } = await axios.get<User[]>('/api/chats/get-users-with-unread-messages');
-        setUsers(data);
-      } catch (err) {
-        console.error('Error fetching users:', err);
-        setError('Failed to fetch users. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <p className="text-gray-500">Loading users...</p>
-      </div>
+  const handleUserClick = async (user: User) => {
+    onUserSelect(user);
+    // Reset the unread count for the selected user
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === user.id
+          ? { ...u, unreadCount: 0 } // Reset unread count for selected user
+          : u
+      )
     );
+    // Re-fetch users to ensure counters stay in sync
+    await fetchUsers();
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center p-4">Loading users...</div>;
   }
 
   if (error) {
@@ -57,25 +66,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
   }
 
   return (
-    <div
-      className="w-1/4 bg-white border-r border-gray-200 p-4 overflow-y-auto max-h-screen
-      [&::-webkit-scrollbar]:w-2
-      [&::-webkit-scrollbar-track]:rounded-full
-      [&::-webkit-scrollbar-track]:bg-gray-100
-      [&::-webkit-scrollbar-thumb]:rounded-full
-      [&::-webkit-scrollbar-thumb]:bg-gray-300
-      dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-      dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
-    >
+    <div className="w-1/4 bg-white border-r border-gray-200 p-4 overflow-y-auto max-h-screen">
       <h2 className="text-xl font-semibold mb-4 text-gray-700">Chat Users</h2>
       <div className="space-y-2">
-        {users.map((user, index) => (
+        {users.map((user) => (
           <div
-            key={`${user.id}-${index}`} // Ensure a unique key even if `id` is duplicated
+            key={user.id}
             className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition duration-150 relative"
-            onClick={() => onUserSelect(user)}
+            onClick={() => handleUserClick(user)}
           >
-            {/* Avatar */}
             {user.avatar ? (
               <img
                 src={user.avatar}
@@ -84,19 +83,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
               />
             ) : (
               <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-semibold">
-                {user.firstName ? user.firstName[0] : 'N'}
+                {user.firstName[0]}
               </div>
             )}
 
-            {/* User Info */}
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-800">
-                {user.firstName || 'Unknown'} {user.lastName || ''}
+                {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{user.role || 'User'}</p>
+              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
             </div>
 
-            {/* Unread Message Count */}
             {user.unreadCount && user.unreadCount > 0 && (
               <span className="absolute right-2 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {user.unreadCount}

@@ -29,11 +29,11 @@ model users {
 
   accounts       Account[] // Relation with NextAuth accounts
   sessions       Session[] // Relation with NextAuth sessions
-  posts          Post[] // Relation to Post as author
+  posts          Post[]    // Relation to Post as author
   responses      Response[] // Relation to Response as responder
   chats          Chat[]     @relation("ChatParticipants") // Relation to Chat as a participant
-  messages       Message[] // Relation to Message as a sender
-  UnreadMessages Int        @default(0) // Track the total unread message count
+  messages       Message[]  // Relation to Message as a sender
+  UnreadMessages Int        @default(0) // Total unread messages
 }
 
 model Account {
@@ -107,6 +107,8 @@ model Chat {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   isActive     Boolean   @default(true)
+  lastMessage  String?   // Last message content
+  lastMessageAt DateTime? // Last message timestamp
 }
 
 model Message {

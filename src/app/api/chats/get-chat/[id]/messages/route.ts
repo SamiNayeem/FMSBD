@@ -1,5 +1,3 @@
-// File: app/api/chats/get-chat/[id]/messages/route.ts
-
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -20,7 +18,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
-    // Find or create a chat between the two participants
+    // Find the chat between the participants
     const chat = await prisma.chat.findFirst({
       where: {
         participants: {
@@ -36,7 +34,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       },
     });
 
-    // If no chat exists, return an empty list of messages
     if (!chat) {
       return NextResponse.json(
         { messages: [], message: "No chat found. Start a new conversation." },
@@ -44,7 +41,22 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       );
     }
 
-    // Return chat messages
+    // Mark messages sent by the other user as read
+    await prisma.message.updateMany({
+      where: {
+        chatId: chat.id,
+        senderId: userId,
+        isRead: false,
+      },
+      data: { isRead: true },
+    });
+
+    // Update UnreadMessages count for the logged-in user
+    await prisma.users.update({
+      where: { Id: session.user.id },
+      data: { UnreadMessages: { decrement: chat.messages.filter((msg) => !msg.isRead).length } },
+    });
+
     return NextResponse.json({ messages: chat.messages }, { status: 200 });
   } catch (error: any) {
     console.error("Error fetching chat messages:", error);
