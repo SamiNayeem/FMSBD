@@ -25,11 +25,11 @@ export async function GET(req: Request) {
       author: {
         name: `${post.author.FirstName} ${post.author.LastName}`,
         imageUrl: post.author.Image
-          ? `data:image/jpeg;base64,${post.author.Image.toString("base64")}`
+          ? `data:image/jpeg;base64,${Buffer.from(post.author.Image).toString("base64")}`
           : null,
       },
       imageUrl: post.image
-        ? `data:image/jpeg;base64,${post.image.toString("base64")}`
+        ? `data:image/jpeg;base64,${Buffer.from(post.image).toString("base64")}`
         : null,
       responses: post.responses,
       timestamp: post.createdAt.toISOString(),

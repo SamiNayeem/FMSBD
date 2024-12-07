@@ -59,14 +59,39 @@ const NavBar: React.FC = () => {
         </div>
 
         <div className="md:hidden flex items-center">
-          <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600 focus:outline-none">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-gray-600 focus:outline-none"
+          >
             {isOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             )}
           </button>
@@ -75,17 +100,57 @@ const NavBar: React.FC = () => {
         <div className="hidden md:flex flex-1 justify-center space-x-8">
           {status === "authenticated" ? (
             <>
-              <a href="/feed" className="text-gray-600 hover:text-blue-600">Feed</a>
-              <a href="/map" className="text-gray-600 hover:text-blue-600">Maps</a>
-              <a href="/chat" className="text-gray-600 hover:text-blue-600">Messages</a>
-              <a href="/messages" className="text-gray-600 hover:text-blue-600">Profile</a>
+              <a href="/feed" className="text-gray-600 hover:text-blue-600">
+                Feed
+              </a>
+              <a href="/map" className="text-gray-600 hover:text-blue-600">
+                Maps
+              </a>
+              <a href="/chat" className="text-gray-600 hover:text-blue-600">
+                Messages
+              </a>
+              <a
+                href="/flood-information"
+                className="text-gray-600 hover:text-blue-600"
+              >
+                Educational Contents
+              </a>
+              <a
+                href="/emergency-aid"
+                className="text-gray-600 hover:text-blue-600"
+              >
+                Emergency Aid
+              </a>
+              <a href="/profile" className="text-gray-600 hover:text-blue-600">
+                Profile
+              </a>
             </>
           ) : (
             <>
-              <a href="#" className="text-gray-600 hover:text-blue-600">Home</a>
-              <a href="#about-us" className="text-gray-600 hover:text-blue-600">About Us</a>
-              <a href="#join" className="text-gray-600 hover:text-blue-600">Join Us</a>
-              <a href="#contact" className="text-gray-600 hover:text-blue-600">Contact</a>
+              <a href="#" className="text-gray-600 hover:text-blue-600">
+                Home
+              </a>
+              <a href="#about-us" className="text-gray-600 hover:text-blue-600">
+                About Us
+              </a>
+              <a href="#join" className="text-gray-600 hover:text-blue-600">
+                Join Us
+              </a>
+              <a href="#contact" className="text-gray-600 hover:text-blue-600">
+                Contact
+              </a>
+              <a
+                href="/flood-information"
+                className="text-gray-600 hover:text-blue-600"
+              >
+                Educational Contents
+              </a>
+              <a
+                href="/emergency-aid"
+                className="text-gray-600 hover:text-blue-600"
+              >
+                Emergency Aid
+              </a>
             </>
           )}
         </div>
@@ -103,30 +168,40 @@ const NavBar: React.FC = () => {
                 />
               )}
               <div>
-                <p className="text-gray-600 font-semibold">{userInfo?.FirstName} {userInfo?.LastName}</p>
-                <p className={`text-sm ${
-  userInfo?.Role.toLowerCase() === "user" ? "text-blue-500" :
-  userInfo?.Role.toLowerCase() === "admin" ? "text-red-500" : 
-  "text-green-500" // default to volunteer color if not user or admin
-}`}>{userInfo?.Role}</p>
-                
+                <p className="text-gray-600 font-semibold">
+                  {userInfo?.FirstName} {userInfo?.LastName}
+                </p>
+                <p
+                  className={`text-sm ${
+                    userInfo?.Role.toLowerCase() === "user"
+                      ? "text-blue-500"
+                      : userInfo?.Role.toLowerCase() === "admin"
+                      ? "text-red-500"
+                      : "text-green-500" // default to volunteer color if not user or admin
+                  }`}
+                >
+                  {userInfo?.Role}
+                </p>
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className=" text-red-500 hover:text-white py-2 px-4 rounded-full hover:bg-gradient-to-r hover:from-bg-red-300  hover:to-bg-red-600 transition-all flex border-red-200 items-center border-2"
               >
                 <Image
-                src={"/logout.png"}
-                alt="logout icon"
-                width={25}
-                height={20}
-                className="mr-2"
+                  src={"/logout.png"}
+                  alt="logout icon"
+                  width={25}
+                  height={20}
+                  className="mr-2"
                 />
                 Logout
               </button>
             </div>
           ) : (
-            <a href="/login" className="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition-all">
+            <a
+              href="/login"
+              className="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition-all"
+            >
               Sign In
             </a>
           )}

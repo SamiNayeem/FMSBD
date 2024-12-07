@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import axios from "axios";
@@ -12,22 +12,26 @@ const UserRegistration = () => {
     PhoneNumber: "",
     Password: "",
     ConfirmPassword: "",
+    Image: null as string | null, // Optional Base64 image
   });
-  const [imageFile, setImageFile] = useState<File | null>(null); // Store the selected file
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle image file selection
+  // Handle image upload and convert to Base64
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, Image: reader.result as string })); // Base64 string
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -42,35 +46,22 @@ const UserRegistration = () => {
     }
 
     try {
-      // Create a FormData object to handle file upload
-      const formDataPayload = new FormData();
-      formDataPayload.append("FirstName", formData.FirstName);
-      formDataPayload.append("LastName", formData.LastName);
-      formDataPayload.append("Email", formData.Email);
-      formDataPayload.append("PhoneNumber", formData.PhoneNumber);
-      formDataPayload.append("Password", formData.Password);
-      formDataPayload.append("ConfirmPassword", formData.ConfirmPassword);
-
-      if (imageFile) {
-        formDataPayload.append("Image", imageFile); // Append the file
-      }
-
-      const response = await axios.post("/api/volunteer-registration", formDataPayload, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Ensure correct content type
-        },
+      // Send Base64 image string to backend
+      const response = await axios.post("/api/volunteer-registration", {
+        ...formData,
+        Image: formData.Image ? formData.Image.split(',')[1] : null, // Remove Base64 header (data:image/png;base64,)
       });
 
       setMessage(response.data.message);
       setIsSuccess(true);
 
-      // Redirect after success
+      // Redirect after successful registration
       setTimeout(() => {
         window.location.href = "/login";
       }, 2000);
     } catch (error: any) {
       setMessage(
-        error.response?.data?.message || "Registration failed. Please try again."
+        error.response?.data?.error || "Registration failed. Please try again."
       );
       setIsSuccess(false);
     }
@@ -90,7 +81,9 @@ const UserRegistration = () => {
         {message && (
           <div
             className={`mb-4 p-3 rounded text-center ${
-              isSuccess ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              isSuccess
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {message}
@@ -108,7 +101,7 @@ const UserRegistration = () => {
                 name="FirstName"
                 type="text"
                 required
-                className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+                className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
                 placeholder="Enter your first name"
                 value={formData.FirstName}
                 onChange={handleChange}
@@ -122,7 +115,7 @@ const UserRegistration = () => {
                 name="LastName"
                 type="text"
                 required
-                className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+                className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
                 placeholder="Enter your last name"
                 value={formData.LastName}
                 onChange={handleChange}
@@ -139,7 +132,7 @@ const UserRegistration = () => {
               name="Email"
               type="email"
               required
-              className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
               placeholder="Enter your email"
               value={formData.Email}
               onChange={handleChange}
@@ -155,7 +148,7 @@ const UserRegistration = () => {
               name="PhoneNumber"
               type="text"
               required
-              className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
               placeholder="Enter your phone number"
               value={formData.PhoneNumber}
               onChange={handleChange}
@@ -167,15 +160,17 @@ const UserRegistration = () => {
             <label className="text-gray-700 text-sm font-medium mb-2 block">
               Password
             </label>
-            <input
-              name="Password"
-              type={showPassword ? "text" : "password"}
-              required
-              className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
-              placeholder="Enter your password"
-              value={formData.Password}
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <input
+                name="Password"
+                type={showPassword ? "text" : "password"}
+                required
+                className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+                placeholder="Enter your password"
+                value={formData.Password}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Confirm Password Field */}
@@ -183,15 +178,17 @@ const UserRegistration = () => {
             <label className="text-gray-700 text-sm font-medium mb-2 block">
               Confirm Password
             </label>
-            <input
-              name="ConfirmPassword"
-              type={showPassword ? "text" : "password"}
-              required
-              className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
-              placeholder="Enter your password again"
-              value={formData.ConfirmPassword}
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <input
+                name="ConfirmPassword"
+                type={showPassword ? "text" : "password"}
+                required
+                className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+                placeholder="Confirm your password"
+                value={formData.ConfirmPassword}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Image Upload Field */}
@@ -204,7 +201,7 @@ const UserRegistration = () => {
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
-              className="w-full text-gray-800 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 outline-none"
             />
           </div>
 
@@ -212,16 +209,19 @@ const UserRegistration = () => {
           <div>
             <button
               type="submit"
-              className="w-full py-2.5 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors text-sm font-semibold"
+              className="w-full py-2.5 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               Register
             </button>
           </div>
 
           {/* Already have an account Link */}
-          <p className="text-center text-gray-700 text-sm mt-6">
+          <p className="text-center text-sm mt-6">
             Already have an account?
-            <a href="/login" className="text-blue-600 hover:underline ml-1 font-medium">
+            <a
+              href="/login"
+              className="text-blue-600 hover:underline ml-1 font-medium"
+            >
               Login here
             </a>
           </p>

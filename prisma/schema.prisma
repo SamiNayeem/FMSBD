@@ -29,11 +29,12 @@ model users {
 
   accounts       Account[] // Relation with NextAuth accounts
   sessions       Session[] // Relation with NextAuth sessions
-  posts          Post[]    // Relation to Post as author
+  posts          Post[] // Relation to Post as author
   responses      Response[] // Relation to Response as responder
   chats          Chat[]     @relation("ChatParticipants") // Relation to Chat as a participant
-  messages       Message[]  // Relation to Message as a sender
+  messages       Message[] // Relation to Message as a sender
   UnreadMessages Int        @default(0) // Total unread messages
+  supplies       Supply[] // Relation to Supply as addedBy
 }
 
 model Account {
@@ -101,13 +102,13 @@ model Response {
 }
 
 model Chat {
-  id           Int       @id @default(autoincrement())
-  participants users[]   @relation("ChatParticipants")
-  messages     Message[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  isActive     Boolean   @default(true)
-  lastMessage  String?   // Last message content
+  id            Int       @id @default(autoincrement())
+  participants  users[]   @relation("ChatParticipants")
+  messages      Message[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isActive      Boolean   @default(true)
+  lastMessage   String? // Last message content
   lastMessageAt DateTime? // Last message timestamp
 }
 
@@ -123,4 +124,49 @@ model Message {
   sender   users   @relation(fields: [senderId], references: [Id], onDelete: Cascade)
   isRead   Boolean @default(false)
   isActive Boolean @default(true)
+}
+
+model Division {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  cities    City[]
+  supplies  Supply[]
+  createdAt DateTime @default(now())
+}
+
+model City {
+  id         Int      @id @default(autoincrement())
+  name       String
+  divisionId Int
+  division   Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  areas      Area[]
+  supplies   Supply[] // Relation to Supply
+  createdAt  DateTime @default(now())
+
+  @@unique([name, divisionId])
+}
+
+model Area {
+  id        Int      @id @default(autoincrement())
+  name      String
+  cityId    Int
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  supplies  Supply[] // Relation to Supply
+  createdAt DateTime @default(now())
+
+  @@unique([name, cityId])
+}
+
+model Supply {
+  id          Int      @id @default(autoincrement())
+  description String
+  divisionId  Int
+  cityId      Int
+  areaId      Int
+  division    Division @relation(fields: [divisionId], references: [id])
+  city        City     @relation(fields: [cityId], references: [id])
+  area        Area     @relation(fields: [areaId], references: [id])
+  createdBy   Int
+  creator     users    @relation(fields: [createdBy], references: [Id])
+  createdAt   DateTime @default(now())
 }

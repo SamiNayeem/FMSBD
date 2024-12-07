@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       author: `${newPost.author.FirstName} ${newPost.author.LastName}`,
       content: newPost.content,
       imageUrl: newPost.image
-        ? `data:image/jpeg;base64,${newPost.image.toString("base64")}`
+        ? `data:image/jpeg;base64,${Buffer.from(newPost.image).toString("base64")}`
         : null,
       responses: [],
       timestamp: newPost.createdAt.toISOString(),

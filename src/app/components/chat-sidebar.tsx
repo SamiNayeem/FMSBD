@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
               />
             ) : (
               <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-semibold">
-                {user.firstName[0]}
+                {user.firstName}
               </div>
             )}
 
@@ -93,12 +93,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onUserSelect }) => {
               </p>
               <p className="text-xs text-gray-500 capitalize">{user.role}</p>
             </div>
-
-            {user.unreadCount && user.unreadCount > 0 && (
-              <span className="absolute right-2 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                {user.unreadCount}
+            
+            {(user.unreadCount ?? 0) > 0 && (
+              <span className="absolute right-2 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-1 w-1 flex items-center justify-center">
+                {/* {user.unreadCount} */}
               </span>
             )}
+            
           </div>
         ))}
       </div>
