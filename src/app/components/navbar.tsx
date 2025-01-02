@@ -6,6 +6,7 @@ import axios from "axios";
 
 const NavBar: React.FC = () => {
   const { data: session, status } = useSession();
+
   interface UserInfo {
     FirstName: string;
     LastName: string;
@@ -16,7 +17,7 @@ const NavBar: React.FC = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // For mobile menu
 
   useEffect(() => {
     setIsClient(true);
@@ -47,7 +48,11 @@ const NavBar: React.FC = () => {
   }
 
   return (
-    <nav className="fixed top-0 left-0 w-full drop-shadow-lg z-50 transition-all duration-300 bg-white shadow-lg py-2">
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        isScrolled ? "bg-gray-50 shadow-md" : "bg-white"
+      }`}
+    >
       <div className="flex items-center justify-between px-6 md:px-20 py-2">
         <div className="flex justify-start">
           <Image
@@ -58,6 +63,7 @@ const NavBar: React.FC = () => {
           />
         </div>
 
+        {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center">
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -97,6 +103,7 @@ const NavBar: React.FC = () => {
           </button>
         </div>
 
+        {/* Desktop Links */}
         <div className="hidden md:flex flex-1 justify-center space-x-8">
           {status === "authenticated" ? (
             <>
@@ -127,16 +134,16 @@ const NavBar: React.FC = () => {
             </>
           ) : (
             <>
-              <a href="#" className="text-gray-600 hover:text-blue-600">
+              <a href="/" className="text-gray-600 hover:text-blue-600">
                 Home
               </a>
-              <a href="#about-us" className="text-gray-600 hover:text-blue-600">
+              <a href="/#about-us" className="text-gray-600 hover:text-blue-600">
                 About Us
               </a>
-              <a href="#join" className="text-gray-600 hover:text-blue-600">
+              <a href="/#join" className="text-gray-600 hover:text-blue-600">
                 Join Us
               </a>
-              <a href="#contact" className="text-gray-600 hover:text-blue-600">
+              <a href="/#contact" className="text-gray-600 hover:text-blue-600">
                 Contact
               </a>
               <a
@@ -155,6 +162,7 @@ const NavBar: React.FC = () => {
           )}
         </div>
 
+        {/* Profile Section */}
         <div className="hidden md:flex justify-end">
           {status === "authenticated" ? (
             <div className="flex items-center space-x-4">
@@ -185,7 +193,7 @@ const NavBar: React.FC = () => {
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className=" text-red-500 hover:text-white py-2 px-4 rounded-full hover:bg-gradient-to-r hover:from-bg-red-300  hover:to-bg-red-600 transition-all flex border-red-200 items-center border-2"
+                className="text-red-500 hover:text-white py-2 px-4 rounded-full hover:bg-gradient-to-r hover:from-bg-red-300 hover:to-bg-red-600 transition-all flex border-red-200 items-center border-2"
               >
                 <Image
                   src={"/logout.png"}
@@ -207,6 +215,79 @@ const NavBar: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-white shadow-lg rounded-lg py-4 px-6 space-y-4">
+          {status === "authenticated" ? (
+            <>
+              <a href="/feed" className="block text-gray-600 hover:text-blue-600">
+                Feed
+              </a>
+              <a href="/map" className="block text-gray-600 hover:text-blue-600">
+                Maps
+              </a>
+              <a href="/chat" className="block text-gray-600 hover:text-blue-600">
+                Messages
+              </a>
+              <a
+                href="/flood-information"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Educational Contents
+              </a>
+              <a
+                href="/emergency-aid"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Emergency Aid
+              </a>
+              <a
+                href="/profile"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Profile
+              </a>
+            </>
+          ) : (
+            <>
+              <a href="/" className="block text-gray-600 hover:text-blue-600">
+                Home
+              </a>
+              <a
+                href="/#about-us"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                About Us
+              </a>
+              <a
+                href="/#join"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Join Us
+              </a>
+              <a
+                href="/#contact"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Contact
+              </a>
+              <a
+                href="/flood-information"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Educational Contents
+              </a>
+              <a
+                href="/emergency-aid"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Emergency Aid
+              </a>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 };
