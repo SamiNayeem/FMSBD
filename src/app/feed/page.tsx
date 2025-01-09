@@ -8,6 +8,7 @@ type Post = {
   id: string;
   author: {
     name: string;
+    role: string;
     imageUrl: string | null;
   };
   timestamp: string;
@@ -121,7 +122,7 @@ const NewsfeedPage = () => {
     try {
       const response = await axios.post(`/api/posts/${postId}/comment`, {
         message: commentContent[postId],
-        userId: session?.user?.id,
+        authorId: session?.user?.id,
       });
 
       if (response.status === 201) {
@@ -170,7 +171,7 @@ const NewsfeedPage = () => {
 
         {posts.map((post) => (
           <div key={post.id} className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center mb-4">
               <div className="flex items-center space-x-3">
                 {post.author.imageUrl ? (
                   <img
@@ -183,8 +184,20 @@ const NewsfeedPage = () => {
                 )}
                 <div className="text-gray-800 font-semibold">{post.author.name}</div>
               </div>
+
+              <div
+                className={`text-sm font-medium rounded-full px-3 py-1 ml-2 ${
+                  post.author.role === "Admin"
+                    ? "bg-red-500 text-white"
+                    : post.author.role === "Volunteer"
+                    ? "bg-blue-500 text-white"
+                    : "bg-green-500 text-white"
+                }`}
+              >
+                {post.author.role}
+              </div>
+
               <div className="relative">
-                {/* Three-dot icon */}
                 {session?.user?.role === "Admin" && (
                   <>
                     <button
@@ -270,22 +283,24 @@ const NewsfeedPage = () => {
         ))}
 
         {/* Confirmation Modal */}
-        {showConfirmation && selectedPostId && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+        {showConfirmation && (
+          <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              <p className="text-lg text-gray-700 mb-4">
                 Are you sure you want to mark this post as rescued?
-              </h2>
+              </p>
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setShowConfirmation(false)}
-                  className="py-2 px-4 bg-gray-300 text-gray-700 rounded-lg"
+                  className="py-2 px-4 bg-gray-500 text-white rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleMarkAsRescued(selectedPostId)}
-                  className="py-2 px-4 bg-red-600 text-white rounded-lg"
+                  onClick={() => {
+                    handleMarkAsRescued(selectedPostId!);
+                  }}
+                  className="py-2 px-4 bg-blue-600 text-white rounded-lg"
                 >
                   Confirm
                 </button>

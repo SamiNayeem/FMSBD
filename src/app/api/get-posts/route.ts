@@ -11,6 +11,7 @@ export async function GET(req: Request) {
             FirstName: true,
             LastName: true,
             Image: true, // Include the author's image
+            Role: true,
           },
         },
         responses: true,
@@ -24,6 +25,7 @@ export async function GET(req: Request) {
       content: post.content,
       author: {
         name: `${post.author.FirstName} ${post.author.LastName}`,
+        role: post.author.Role,
         imageUrl: post.author.Image
           ? `data:image/jpeg;base64,${Buffer.from(post.author.Image).toString("base64")}`
           : null,

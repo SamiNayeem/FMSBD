@@ -114,7 +114,7 @@ const NavBar: React.FC = () => {
                 Maps
               </a>
               <a href="/chat" className="text-gray-600 hover:text-blue-600">
-                Messages
+                Emergency Messages
               </a>
               <a
                 href="/flood-information"
@@ -283,6 +283,12 @@ const NavBar: React.FC = () => {
                 className="block text-gray-600 hover:text-blue-600"
               >
                 Emergency Aid
+              </a>
+              <a
+                href="/login"
+                className="block text-gray-600 hover:text-blue-600"
+              >
+                Sign In
               </a>
             </>
           )}

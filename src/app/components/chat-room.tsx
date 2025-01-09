@@ -49,10 +49,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ user }) => {
         content: newMessage,
       });
 
-      // Add the new message to the chat
       setMessages((prev) => [...prev, data]);
-
-      // Reset input
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -68,7 +65,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ user }) => {
   }
 
   return (
-    <div className="flex flex-col flex-grow bg-white p-4 h-2/3 mt-40">
+    <div className="flex flex-col flex-grow bg-white p-4 sm:h-full sm:ml-1/4">
       <div className="flex-grow overflow-y-auto mb-4 space-y-2">
         {messages.map((message) => (
           <div
@@ -82,7 +79,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ user }) => {
                 message.senderId === user.id
                   ? 'bg-gray-200 text-gray-800'
                   : 'bg-blue-500 text-white'
-                  
               }`}
             >
               {message.content}
@@ -90,7 +86,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ user }) => {
           </div>
         ))}
       </div>
-      <div className="flex">
+      <div className="flex mt-4">
         <input
           type="text"
           className="flex-grow border rounded-lg px-4 py-2"

@@ -2,3 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default Layout for Large Screens */
+.sidebar {
+    width: 25%;
+    display: block;
+  }
+  
+  .chat-room {
+    width: 75%;
+    height: 100vh;
+  }
+  
+  /* Mobile Layout */
+  @media (max-width: 640px) {
+    .sidebar {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background-color: white;
+      z-index: 10;
+      transition: transform 0.3s ease;
+      transform: translateX(-100%); /* Hide Sidebar */
+    }
+    
+    .sidebar.open {
+      transform: translateX(0); /* Show Sidebar */
+    }
+  
+    .chat-room {
+      width: 100%;
+      height: 100vh;
+      margin-left: 0;
+    }
+  }
+  

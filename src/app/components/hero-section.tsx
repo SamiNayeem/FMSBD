@@ -12,7 +12,7 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 bg-opacity-50 rounded-bl-[4rem] md:rounded-bl-[6rem] lg:rounded-bl-[8rem]"></div>
       
       <div
-        className="container h-full relative mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between px-4 md:px-6 lg:px-12 rounded-bl-[4rem] md:rounded-bl-[6rem] lg:rounded-bl-[8rem] bg-[url('/HeroImage.jpg')] bg-center bg-cover bg-no-repeat w-full"
+        className="container h-full relative mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between px-4 md:px-6 lg:px-12 rounded-bl-[4rem] md:rounded-bl-[6rem] lg:rounded-bl-[8rem] bg-[url('/1035.jpg')] bg-center bg-cover bg-no-repeat w-full"
         // style={{
         //   backgroundImage: "url('/HeroImage.jpg')", // Replace with the path to your background image
         //   backgroundSize: 'cover',

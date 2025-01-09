@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       },
       include: {
         author: {
-          select: { FirstName: true, LastName: true },
+          select: { FirstName: true, LastName: true, Role: true },
         },
       },
     });
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     // Return the post with a Base64 image URL if available
     const formattedPost = {
       id: newPost.id,
-      author: `${newPost.author.FirstName} ${newPost.author.LastName}`,
+      author: `${newPost.author.FirstName} ${newPost.author.LastName} ${newPost.author.Role}`,
       content: newPost.content,
       imageUrl: newPost.image
         ? `data:image/jpeg;base64,${Buffer.from(newPost.image).toString("base64")}`

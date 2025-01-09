@@ -80,6 +80,7 @@ model Post {
   image     Bytes?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  isActive      Boolean   @default(true)
   responses Response[]
 
   author users @relation(fields: [authorId], references: [Id], onDelete: Cascade)
