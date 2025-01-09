@@ -1,54 +1,43 @@
+// app/api/posts/[postId]/comment/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request, { params }: { params: { postId: string } }) {
+  const { postId } = params;
+
   try {
     const body = await req.json();
-    const { message, authorId } = body;
+    const { userId, message } = body;
 
-    // Ensure message and authorId are provided
-    if (!message || !authorId) {
-      return NextResponse.json({ error: "Message and authorId are required" }, { status: 400 });
+    // Validation
+    if (!userId || !message) {
+      return NextResponse.json({ error: "User ID and message are required" }, { status: 400 });
     }
 
-    // Check if author exists
-    const authorExists = await prisma.users.findUnique({
-      where: { Id: authorId },
+    // Find the post to which the comment is being added
+    const post = await prisma.post.findUnique({
+      where: { id: parseInt(postId) },
     });
 
-    if (!authorExists) {
-      return NextResponse.json({ error: "Author not found" }, { status: 404 });
-    }
-
-    // Check if post exists
-    const postExists = await prisma.post.findUnique({
-      where: { id: Number(params.postId) },
-    });
-
-    if (!postExists) {
+    if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Create the comment (response)
+    // Create the new comment
     const newComment = await prisma.response.create({
       data: {
-        postId: Number(params.postId), // Ensure postId is converted to a number
-        userId: authorId, // Use authorId for user who commented
+        postId: parseInt(postId),
+        userId,
         message,
+      },
+      include: {
+        user: { select: { FirstName: true, LastName: true } },
       },
     });
 
-    // Return the newly created comment
-    const formattedComment = {
-      id: newComment.id,
-      message: newComment.message,
-      volunteerName: `${authorExists.FirstName} ${authorExists.LastName}`, // Get the author's full name
-      timestamp: newComment.createdAt.toISOString(),
-    };
-
-    return NextResponse.json(formattedComment, { status: 201 });
+    return NextResponse.json(newComment, { status: 201 });
   } catch (error) {
-    console.error("Error adding comment:", error);
+    console.error("Error creating comment:", error);
     return NextResponse.json({ error: "An error occurred while adding the comment" }, { status: 500 });
   }
 }

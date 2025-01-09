@@ -92,15 +92,14 @@ model Response {
   id        Int      @id @default(autoincrement())
   postId    Int
   userId    Int
-  message   String   @db.VarChar(300)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  message   String
+  timestamp DateTime @default(now())
 
-  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user users @relation(fields: [userId], references: [Id], onDelete: Cascade)
-
-  @@index([createdAt])
+  post      Post     @relation(fields: [postId], references: [id])
+  user      users     @relation(fields: [userId], references: [Id])
 }
+
+
 
 model Chat {
   id            Int       @id @default(autoincrement())

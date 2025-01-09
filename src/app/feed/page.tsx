@@ -29,8 +29,6 @@ const NewsfeedPage = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [commentContent, setCommentContent] = useState<Record<string, string>>({});
-  const [selectedPostId, setSelectedPostId] = useState<string | null>(null); // Track post for confirmation
-  const [showConfirmation, setShowConfirmation] = useState(false); // Confirmation modal state
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -100,19 +98,6 @@ const NewsfeedPage = () => {
     }
   };
 
-  const handleMarkAsRescued = async (postId: string) => {
-    try {
-      const response = await axios.patch(`/api/posts/${postId}/rescue`);
-      if (response.status === 200) {
-        setPosts(posts.filter((post) => post.id !== postId));
-        setShowConfirmation(false);
-        setSelectedPostId(null);
-      }
-    } catch (error) {
-      console.error("Error marking post as rescued:", error);
-    }
-  };
-
   const handleAddComment = async (postId: string) => {
     if (!commentContent[postId]?.trim()) {
       alert("Comment content cannot be empty");
@@ -120,9 +105,14 @@ const NewsfeedPage = () => {
     }
 
     try {
+      if (!session?.user?.id) {
+        alert("You need to be logged in to comment.");
+        return;
+      }
+
       const response = await axios.post(`/api/posts/${postId}/comment`, {
+        userId: session.user.id,
         message: commentContent[postId],
-        authorId: session?.user?.id,
       });
 
       if (response.status === 201) {
@@ -140,12 +130,18 @@ const NewsfeedPage = () => {
       }
     } catch (error) {
       console.error("Error adding comment:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        alert(error.response.data.error || "An error occurred while adding the comment.");
+      } else {
+        alert("An error occurred while adding the comment.");
+      }
     }
   };
 
   return (
     <div className="bg-gray-50 min-h-screen py-6 px-4 mt-20">
       <div className="max-w-3xl mx-auto space-y-8">
+        {/* New Post Section */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <textarea
             className="w-full h-24 p-4 rounded-lg focus:ring-2 focus:ring-blue-500 border-black border-2 resize-none"
@@ -169,6 +165,7 @@ const NewsfeedPage = () => {
           </button>
         </div>
 
+        {/* Display Posts */}
         {posts.map((post) => (
           <div key={post.id} className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center mb-4">
@@ -196,31 +193,6 @@ const NewsfeedPage = () => {
               >
                 {post.author.role}
               </div>
-
-              <div className="relative">
-                {session?.user?.role === "Admin" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        setSelectedPostId(selectedPostId === post.id ? null : post.id)
-                      }
-                      className="text-gray-600 hover:text-gray-800"
-                    >
-                      &#x22EE; {/* Three-dot icon */}
-                    </button>
-                    {selectedPostId === post.id && (
-                      <div className="absolute right-0 mt-2 shadow-lg rounded-lg py-2 z-10 w-40 bg-blue-100">
-                        <button
-                          onClick={() => setShowConfirmation(true)}
-                          className="block px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 w-full"
-                        >
-                          Mark as Rescued
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
             </div>
 
             <p className="text-gray-700 mb-4">{post.content}</p>
@@ -235,30 +207,35 @@ const NewsfeedPage = () => {
               </div>
             )}
 
+            {/* Comments Section */}
             <div className="border-t pt-4 mt-4">
-              <h4 className="text-sm font-semibold text-blue-600 mb-2">
-                Volunteer Responses
-              </h4>
+              <h4 className="text-sm font-semibold text-blue-600 mb-2">Volunteer Responses</h4>
               <ul className="space-y-2">
-                {post.responses.map((response, index) => (
-                  <li
-                    key={index}
-                    className="flex justify-between items-center bg-gray-100 rounded-lg p-3 text-gray-600"
-                  >
-                    <span>{response.message}</span>
-                    <div className="flex items-center space-x-2">
-                      <a className="text-blue-600 hover:underline text-sm font-medium">
-                        {response.volunteerName}
-                      </a>
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(response.timestamp), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                  </li>
-                ))}
+                {post.responses.map((response) => {
+                  const timestamp = new Date(response.timestamp);
+                  const formattedTimestamp = isNaN(timestamp.getTime())
+                    ? null
+                    : timestamp;
+
+                  return (
+                    <li key={response.id} className="flex justify-between items-center bg-gray-100 rounded-lg p-3 text-gray-600">
+                      <span>{response.message}</span>
+                      <div className="flex items-center space-x-2">
+                        <a className="text-blue-600 hover:underline text-sm font-medium">
+                          {response.volunteerName}
+                        </a>
+                        <span className="text-xs text-gray-500">
+                          {formattedTimestamp
+                            ? formatDistanceToNow(formattedTimestamp, { addSuffix: true })
+                            : "Invalid date"}
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
+
+              {/* Add a new comment */}
               <div className="mt-4">
                 <textarea
                   className="w-full p-2 border rounded-lg"
@@ -281,33 +258,6 @@ const NewsfeedPage = () => {
             </div>
           </div>
         ))}
-
-        {/* Confirmation Modal */}
-        {showConfirmation && (
-          <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <p className="text-lg text-gray-700 mb-4">
-                Are you sure you want to mark this post as rescued?
-              </p>
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={() => setShowConfirmation(false)}
-                  className="py-2 px-4 bg-gray-500 text-white rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    handleMarkAsRescued(selectedPostId!);
-                  }}
-                  className="py-2 px-4 bg-blue-600 text-white rounded-lg"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
