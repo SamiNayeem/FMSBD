@@ -18,6 +18,7 @@ type Post = {
     id: string;
     message: string;
     volunteerName: string;
+    role: string;
     timestamp: string;
   }[];
 };
@@ -130,11 +131,7 @@ const NewsfeedPage = () => {
       }
     } catch (error) {
       console.error("Error adding comment:", error);
-      if (axios.isAxiosError(error) && error.response) {
-        alert(error.response.data.error || "An error occurred while adding the comment.");
-      } else {
-        alert("An error occurred while adding the comment.");
-      }
+      alert((error as any)?.response?.data?.error || "An error occurred while adding the comment.");
     }
   };
 
