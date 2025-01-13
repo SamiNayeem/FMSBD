@@ -30,6 +30,7 @@ const NewsfeedPage = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [commentContent, setCommentContent] = useState<Record<string, string>>({});
+  const [menuOpen, setMenuOpen] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -135,6 +136,25 @@ const NewsfeedPage = () => {
     }
   };
 
+  // Handle the Mark as Rescued action
+  const handleMarkAsRescued = async (postId: string) => {
+    try {
+      const response = await axios.post(`/api/posts/${postId}/rescue`);
+
+      if (response.status === 200) {
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === postId ? { ...post, IsActive: 0 } : post
+          )
+        );
+        alert("Post marked as rescued.");
+      }
+    } catch (error) {
+      console.error("Error rescuing post:", error);
+      alert("An error occurred while rescuing the post.");
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-6 px-4 mt-20">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -190,6 +210,33 @@ const NewsfeedPage = () => {
               >
                 {post.author.role}
               </div>
+
+              {/* Admin Three-Dot Menu */}
+              {post.author.role === "Admin" && (
+                <div className="relative ml-auto">
+                  <button
+                    onClick={() =>
+                      setMenuOpen((prev) => ({
+                        ...prev,
+                        [post.id]: !prev[post.id],
+                      }))
+                    }
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    &#x22EE;
+                  </button>
+                  {menuOpen[post.id] && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+                      <button
+                        onClick={() => handleMarkAsRescued(post.id)}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Mark as Rescued
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <p className="text-gray-700 mb-4">{post.content}</p>

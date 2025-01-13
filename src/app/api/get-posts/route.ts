@@ -16,6 +16,7 @@ export async function GET(req: Request) {
         },
         responses: true,
       },
+      where: { isActive: true },
     });
 
     // Format posts to include author's image as Base64 string
