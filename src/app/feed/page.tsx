@@ -211,8 +211,8 @@ const NewsfeedPage = () => {
                 {post.author.role}
               </div>
 
-              {/* Admin Three-Dot Menu */}
-              {post.author.role === "Admin" && (
+              {/* Three-Dot Menu for All Posts */}
+              {session?.user?.role === "Admin" && (
                 <div className="relative ml-auto">
                   <button
                     onClick={() =>
